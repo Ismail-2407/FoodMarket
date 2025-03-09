@@ -1,0 +1,7 @@
+C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.csproj.AssemblyReference.cache
+C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.AssemblyInfoInputs.cache
+C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.AssemblyInfo.cs
+C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.csproj.CoreCompileInputs.cache
+C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.MvcApplicationPartsAssemblyInfo.cache

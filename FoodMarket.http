@@ -1,0 +1,6 @@
+@FoodMarket_HostAddress = http://localhost:5091
+
+GET {{FoodMarket_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
