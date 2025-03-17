@@ -1,4 +1,4 @@
-﻿namespace GroceryStore.Models
+﻿namespace FoodMarket.Models
 {
     public class Category
     {

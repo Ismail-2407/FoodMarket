@@ -1,55 +1,75 @@
-﻿using GroceryStore.Models;
-using GroceryStore.Repositories;
+﻿using FoodMarket.DTOs;
+using FoodMarket.Models;
+using FoodMarket.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GroceryStore.Controllers
+namespace FoodMarket.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/products")]
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IProductRepository _repository;
 
-        public ProductController(IProductRepository productRepository)
+        public ProductController(IProductRepository repository)
         {
-            _productRepository = productRepository;
+            _repository = repository;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var products = await _productRepository.GetAllAsync();
+            var products = await _repository.GetAll();
             return Ok(products);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product == null) return NotFound();
-            return Ok(product);
+            var product = await _repository.GetById(id);
+            return product == null ? NotFound() : Ok(product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> Create(Product product)
+        public async Task<IActionResult> Add(ProductDto dto)
         {
-            await _productRepository.AddAsync(product);
-            return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
+            var product = new Product
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                ImageUrl = dto.ImageUrl
+            };
+
+            var createdProduct = await _repository.Add(product);
+            return CreatedAtAction(nameof(GetById), new { id = createdProduct.Id }, createdProduct);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, Product product)
+        public async Task<IActionResult> Update(int id, ProductDto dto)
         {
-            if (id != product.Id) return BadRequest();
-            await _productRepository.UpdateAsync(product);
-            return NoContent();
+            var product = new Product
+            {
+                Id = id,
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                ImageUrl = dto.ImageUrl
+            };
+
+            var updatedProduct = await _repository.Update(product);
+            return updatedProduct == null ? NotFound() : Ok(updatedProduct);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _productRepository.DeleteAsync(id);
-            return NoContent();
+            var result = await _repository.Delete(id);
+            return result ? NoContent() : NotFound();
         }
     }
 }

@@ -1,53 +1,49 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using GroceryStore.Models;
-using GroceryStore.Repositories;
+using FoodMarket.Data;
+using FoodMarket.DTOs;
+using FoodMarket.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace GroceryStore.Services
+namespace FoodMarket.Services
 {
     public class AuthService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;
 
-        public AuthService(IUserRepository userRepository, IConfiguration configuration)
+        public AuthService(UserManager<User> userManager, IConfiguration configuration)
         {
-            _userRepository = userRepository;
+            _userManager = userManager;
             _configuration = configuration;
         }
 
-        public async Task<string?> AuthenticateAsync(string username, string password)
+        public async Task<string?> Register(RegisterDto dto)
         {
-            var user = await _userRepository.GetByUsernameAsync(username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            {
+            var user = new User { FullName = dto.FullName, Email = dto.Email, UserName = dto.Email };
+            var result = await _userManager.CreateAsync(user, dto.Password);
+            return result.Succeeded ? GenerateJwtToken(user) : null;
+        }
+
+        public async Task<string?> Login(LoginDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
                 return null;
-            }
 
             return GenerateJwtToken(user);
         }
 
-        public async Task RegisterAsync(string username, string password)
-        {
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-            var user = new User { Username = username, PasswordHash = hashedPassword };
-            await _userRepository.AddAsync(user);
-        }
-
         private string GenerateJwtToken(User user)
         {
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
-            var claims = new List<Claim> { new(ClaimTypes.Name, user.Username) };
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Id) };
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
-                _configuration["Jwt:Issuer"],
-                _configuration["Jwt:Audience"],
-                claims,
-                expires: DateTime.UtcNow.AddHours(3),
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
-            );
+                claims: claims, expires: DateTime.UtcNow.AddDays(7), signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

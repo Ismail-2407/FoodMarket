@@ -1,9 +1,10 @@
-﻿using GroceryStore.Services;
+﻿using FoodMarket.DTOs;
+using FoodMarket.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GroceryStore.Controllers
+namespace FoodMarket.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -15,26 +16,17 @@ namespace GroceryStore.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] AuthRequest request)
+        public async Task<IActionResult> Register(RegisterDto dto)
         {
-            await _authService.RegisterAsync(request.Username, request.Password);
-            return Ok(new { message = "User registered successfully" });
+            var token = await _authService.Register(dto);
+            return token == null ? BadRequest("Ошибка регистрации") : Ok(new { Token = token });
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] AuthRequest request)
+        public async Task<IActionResult> Login(LoginDto dto)
         {
-            var token = await _authService.AuthenticateAsync(request.Username, request.Password);
-            if (token == null)
-                return Unauthorized(new { message = "Invalid credentials" });
-
-            return Ok(new { token });
+            var token = await _authService.Login(dto);
+            return token == null ? Unauthorized() : Ok(new { Token = token });
         }
-    }
-
-    public class AuthRequest
-    {
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
     }
 }

@@ -1,13 +1,13 @@
-﻿using GroceryStore.Models;
+﻿using FoodMarket.Models;
 
-namespace GroceryStore.Repositories
+namespace FoodMarket.Repositories
 {
     public interface IProductRepository
     {
-        Task<IEnumerable<Product>> GetAllAsync();
-        Task<Product?> GetByIdAsync(int id);
-        Task AddAsync(Product product);
-        Task UpdateAsync(Product product);
-        Task DeleteAsync(int id);
+        Task<IEnumerable<Product>> GetAll();
+        Task<Product?> GetById(int id);
+        Task<Product> Add(Product product);
+        Task<Product?> Update(Product product);
+        Task<bool> Delete(int id);
     }
 }
