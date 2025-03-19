@@ -1,8 +1,8 @@
-﻿using GroceryStore.Data;
-using GroceryStore.Models;
+﻿using FoodMarket.Data;
+using FoodMarket.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace GroceryStore.Repositories
+namespace FoodMarket.Repositories
 {
     public class UserRepository : IUserRepository
     {

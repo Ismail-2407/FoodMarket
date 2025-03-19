@@ -1,9 +1,11 @@
-﻿namespace GroceryStore.Models
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace FoodMarket.Models
 {
-    public class User
+    public class User : IdentityUser
     {
-        public int Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
+            
     }
 }

@@ -5,3 +5,4 @@ C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.
 C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.csproj.CoreCompileInputs.cache
 C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\LENOVO\RiderProjects\FoodMarket\FoodMarket\obj\Debug\net9.0\FoodMarket.sourcelink.json

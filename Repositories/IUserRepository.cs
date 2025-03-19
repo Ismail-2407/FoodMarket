@@ -1,6 +1,6 @@
-﻿using GroceryStore.Models;
+﻿using FoodMarket.Models;
 
-namespace GroceryStore.Repositories
+namespace FoodMarket.Repositories
 {
     public interface IUserRepository
     {
