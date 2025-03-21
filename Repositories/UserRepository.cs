@@ -15,7 +15,7 @@ namespace FoodMarket.Repositories
 
         public async Task<User?> GetByUsernameAsync(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return await _context.Users.FirstOrDefaultAsync(u => u.CustomUsername == username);
         }
 
         public async Task AddAsync(User user)
