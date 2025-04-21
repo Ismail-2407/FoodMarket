@@ -5249,11 +5249,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\LENOVO\\RiderProjects\\FoodMarket\\FoodMarket\\FoodMarket.csproj",
+      "projectUniqueName": "C:\\Users\\LENOVO\\RiderProjects\\FoodMarkett\\FoodMarket.csproj",
       "projectName": "FoodMarket",
-      "projectPath": "C:\\Users\\LENOVO\\RiderProjects\\FoodMarket\\FoodMarket\\FoodMarket.csproj",
+      "projectPath": "C:\\Users\\LENOVO\\RiderProjects\\FoodMarkett\\FoodMarket.csproj",
       "packagesPath": "C:\\Users\\LENOVO\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\LENOVO\\RiderProjects\\FoodMarket\\FoodMarket\\obj\\",
+      "outputPath": "C:\\Users\\LENOVO\\RiderProjects\\FoodMarkett\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -5286,7 +5286,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.100"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -5360,7 +5360,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.103/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
