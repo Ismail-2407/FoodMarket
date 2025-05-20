@@ -6,9 +6,9 @@ namespace FoodMarket.Repositories
 {
     public class OrderRepository : IOrderRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
-        public OrderRepository(ApplicationDbContext context)
+        public OrderRepository(AppDbContext context)
         {
             _context = context;
         }

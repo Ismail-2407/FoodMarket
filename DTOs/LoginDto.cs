@@ -1,4 +1,4 @@
-﻿namespace FoodMarket.DTOs
+﻿namespace FoodMarket.API.DTOs
 {
     public class LoginDto
     {

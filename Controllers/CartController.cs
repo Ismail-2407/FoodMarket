@@ -5,46 +5,83 @@ using System.Security.Claims;
 
 namespace FoodMarket.Controllers
 {
-    [Route("api/cart")]
     [ApiController]
+    [Route("api/cart")]
     [Authorize]
     public class CartController : ControllerBase
     {
-        private readonly ICartRepository _repository;
+        private readonly ICartRepository _cartRepository;
 
-        public CartController(ICartRepository repository)
+        public CartController(ICartRepository cartRepository)
         {
-            _repository = repository;
+            _cartRepository = cartRepository;
         }
 
-        private string GetUserId() => User.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
+        private string? GetUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetCart()
         {
-            var cart = await _repository.GetCart(GetUserId());
-            return Ok(cart);
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User ID not found in token.");
+
+            var cart = await _cartRepository.GetCart(userId);
+
+            var result = cart.Items.Select(i => new
+            {
+                i.ProductId,
+                i.Product.Name,
+                i.Product.Price,
+                i.Product.ImageUrl,
+                i.Quantity
+            });
+
+            return Ok(result);
         }
 
-        [HttpPost("{productId}")]
+        [HttpPost("add/{productId}")]
+        // [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> AddToCart(int productId)
         {
-            var cart = await _repository.AddToCart(GetUserId(), productId);
+            foreach (var claim in User.Claims)
+            {
+                Console.WriteLine($"CLAIM TYPE: {claim.Type} | VALUE: {claim.Value}");
+            }
+
+            var userId = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User ID not found in token.");
+
+            var cart = await _cartRepository.AddToCart(userId, productId);
             return Ok(cart);
         }
 
-        [HttpDelete("{productId}")]
+
+        [HttpDelete("remove/{productId}")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> RemoveFromCart(int productId)
         {
-            var cart = await _repository.RemoveFromCart(GetUserId(), productId);
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User ID not found in token.");
+
+            var cart = await _cartRepository.RemoveFromCart(userId, productId);
             return Ok(cart);
         }
 
-        [HttpDelete]
+        [HttpDelete("clear")]
         public async Task<IActionResult> ClearCart()
         {
-            await _repository.ClearCart(GetUserId());
-            return NoContent();
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User ID not found in token.");
+
+            var result = await _cartRepository.ClearCart(userId);
+            return Ok(result);
         }
     }
 }

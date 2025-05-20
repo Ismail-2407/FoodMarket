@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodMarket.Repositories;
 
-public class ProductRepository
+public class ProductRepository : IProductRepository
 {
     private readonly AppDbContext _context;
 
@@ -39,5 +39,30 @@ public class ProductRepository
     {
         _context.Products.Remove(product);
         await _context.SaveChangesAsync();
+    }
+
+    public Task<IEnumerable<Product>> GetAll()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Product?> GetById(int id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Product> Add(Product product)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Product?> Update(Product product)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> Delete(int id)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -6,18 +6,28 @@ namespace FoodMarket.Repositories
 {
     public class CartRepository : ICartRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
-        public CartRepository(ApplicationDbContext context)
+        public CartRepository(AppDbContext context)
         {
             _context = context;
         }
 
         public async Task<Cart> GetCart(string userId)
         {
-            return await _context.Carts
-                .Include(c => c.Products)
-                .FirstOrDefaultAsync(c => c.UserId == userId) ?? new Cart { UserId = userId };
+            var cart = await _context.Carts
+                .Include(c => c.Items)
+                .ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (cart == null)
+            {
+                cart = new Cart { UserId = userId };
+                _context.Carts.Add(cart);
+                await _context.SaveChangesAsync();
+            }
+
+            return cart;
         }
 
         public async Task<Cart> AddToCart(string userId, int productId)
@@ -26,7 +36,20 @@ namespace FoodMarket.Repositories
             var product = await _context.Products.FindAsync(productId);
             if (product == null) return cart;
 
-            cart.Products.Add(product);
+            var item = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+            if (item != null)
+            {
+                item.Quantity++;
+            }
+            else
+            {
+                cart.Items.Add(new CartItem
+                {
+                    ProductId = productId,
+                    Quantity = 1,
+                });
+            }
+
             await _context.SaveChangesAsync();
             return cart;
         }
@@ -34,19 +57,21 @@ namespace FoodMarket.Repositories
         public async Task<Cart> RemoveFromCart(string userId, int productId)
         {
             var cart = await GetCart(userId);
-            var product = cart.Products.FirstOrDefault(p => p.Id == productId);
-            if (product != null)
+            var item = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+
+            if (item != null)
             {
-                cart.Products.Remove(product);
+                cart.Items.Remove(item);
                 await _context.SaveChangesAsync();
             }
+
             return cart;
         }
 
         public async Task<bool> ClearCart(string userId)
         {
             var cart = await GetCart(userId);
-            cart.Products.Clear();
+            cart.Items.Clear();
             await _context.SaveChangesAsync();
             return true;
         }

@@ -3,7 +3,8 @@
     public class Cart
     {
         public int Id { get; set; }
-        public string UserId { get; set; } = string.Empty;
-        public List<Product> Products { get; set; } = new();
+        public string UserId { get; set; } = null!;
+
+        public List<CartItem> Items { get; set; } = new();
     }
 }

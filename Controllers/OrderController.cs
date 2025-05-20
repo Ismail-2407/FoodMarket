@@ -8,7 +8,7 @@ namespace FoodMarket.Controllers
 {
     [Route("api/orders")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class OrderController : ControllerBase
     {
         private readonly IOrderRepository _repository;

@@ -352,3 +352,5 @@ C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net9.0\refint\FoodMarket.dll
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net9.0\FoodMarket.pdb
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net9.0\FoodMarket.genruntimeconfig.cache
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net9.0\ref\FoodMarket.dll
+C:\Users\LENOVO\RiderProjects\FoodMarkett\bin\Debug\net9.0\System.Formats.Asn1.dll
+C:\Users\LENOVO\RiderProjects\FoodMarkett\bin\Debug\net9.0\System.Text.Json.dll

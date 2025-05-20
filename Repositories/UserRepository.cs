@@ -6,9 +6,9 @@ namespace FoodMarket.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
-        public UserRepository(ApplicationDbContext context)
+        public UserRepository(AppDbContext context)
         {
             _context = context;
         }

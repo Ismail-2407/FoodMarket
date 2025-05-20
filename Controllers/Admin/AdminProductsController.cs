@@ -8,12 +8,12 @@ namespace FoodMarket.Controllers.Admin;
 
 [Route("api/admin/products")]
 [ApiController]
-[Authorize(Roles = "Admin")]
+//[Authorize(Roles = "Admin")]
 public class AdminProductsController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly AppDbContext _context;
 
-    public AdminProductsController(ApplicationDbContext context)
+    public AdminProductsController(AppDbContext context)
     {
         _context = context;
     }
@@ -55,10 +55,29 @@ public class AdminProductsController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var product = await _context.Products.FindAsync(id);
-        if (product == null) return NotFound();
+
+        if (product == null)
+        {
+            return NotFound(new { message = $"Продукт с id {id} не найден." });
+        }
 
         _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
-        return NoContent();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return NotFound(new { message = $"Продукт с id {id} уже удалён другим процессом." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Произошла внутренняя ошибка при удалении.", details = ex.Message });
+        }
     }
+
+
+
 }

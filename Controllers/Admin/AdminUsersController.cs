@@ -7,7 +7,7 @@ namespace FoodMarket.Controllers.Admin;
 
 [Route("api/admin/users")]
 [ApiController]
-[Authorize(Roles = "Admin")]
+//[Authorize(Roles = "Admin")]
 public class AdminUsersController : ControllerBase
 {
     private readonly UserManager<User> _userManager;

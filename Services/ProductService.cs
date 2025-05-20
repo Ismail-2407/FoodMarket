@@ -7,9 +7,9 @@ namespace FoodMarket.Services
 {
     public class ProductService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly AppDbContext _context;
 
-        public ProductService(ApplicationDbContext context)
+        public ProductService(AppDbContext context)
         {
             _context = context;
         }
