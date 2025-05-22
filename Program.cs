@@ -18,7 +18,7 @@ builder.Services.AddCors(policy =>
     policy.AddPolicy("Default", builder =>
     {
         builder
-            .WithOrigins("http://localhost:5173") 
+            .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
@@ -39,26 +39,16 @@ var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new Exception("JWT key mi
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+Console.WriteLine(jwtKey);
+Console.WriteLine(jwtIssuer);
+Console.WriteLine(jwtAudience);
+
+builder.Services.AddAuthentication(options => {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var accessToken = context.Request.Cookies["access_token"];
-                if (!string.IsNullOrEmpty(accessToken))
-                {
-                    context.Token = accessToken;
-                }
-                return Task.CompletedTask;
-            },
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
-                return Task.CompletedTask;
-            }
-        };
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -67,10 +57,39 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ClockSkew = TimeSpan.Zero,
-            NameClaimType = "name",
-            RoleClaimType = "role"
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+
+        options.Events = new JwtBearerEvents()
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.HttpContext.Request.Cookies["accessToken"];
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            },
+            // OnForbidden = async context =>
+            // {
+            //     var authService = context.HttpContext.RequestServices.GetRequiredService<IAuthService>();
+            //     var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
+            //     
+            //     
+            //     var accessToken = context.Request.Cookies["accessToken"];
+            //     var refreshToken = context.Request.Cookies["refreshToken"];
+            //     
+            //     var username = await tokenService.GetNameFromToken(accessToken);
+            //
+            //     var result = await authService.RefreshTokenAsync(new RefreshTokenRequest(username, refreshToken));
+            //
+            //     context.Response.Cookies.Append("accessToken", result.accessToken);
+            //     context.Response.Cookies.Append("refreshToken", result.refreshToken);
+            //
+            //     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            // }
         };
     });
 
@@ -79,18 +98,30 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.MinimumSameSitePolicy = SameSiteMode.None;
     options.Secure = CookieSecurePolicy.Always;
 });
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
     options.Cookie.HttpOnly = true;
+
+    options.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.StatusCode = 401;
+        return Task.CompletedTask;
+    };
+    options.Events.OnRedirectToAccessDenied = context =>
+    {
+        context.Response.StatusCode = 403;
+        return Task.CompletedTask;
+    };
 });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("UserPolicy", policy => policy.RequireRole("User", "Admin"));
-});
+builder.Services.AddAuthorization();
+// {
+    // options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    // options.AddPolicy("UserPolicy", policy => policy.RequireRole("User", "Admin"));
+// });
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
@@ -99,6 +130,9 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

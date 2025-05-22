@@ -17,14 +17,16 @@ namespace FoodMarket.Repositories
         {
             return await _context.Orders
                 .Where(o => o.UserId == userId)
-                .Include(o => o.Products)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
                 .ToListAsync();
         }
 
         public async Task<Order?> GetOrderById(int id)
         {
             return await _context.Orders
-                .Include(o => o.Products)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
@@ -34,10 +36,17 @@ namespace FoodMarket.Repositories
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync();
 
+            var orderItems = products.Select(p => new OrderItem
+            {
+                ProductId = p.Id,
+                Quantity = 1 
+            }).ToList();
+
             var order = new Order
             {
                 UserId = userId,
-                Products = products,
+                OrderDate = DateTime.UtcNow,
+                OrderItems = orderItems,
                 TotalPrice = products.Sum(p => p.Price)
             };
 

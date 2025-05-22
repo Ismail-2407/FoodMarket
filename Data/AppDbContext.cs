@@ -9,29 +9,45 @@ namespace FoodMarket.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Product> Products { get; set; }
+        public DbSet<Category> Categories { get; set; } 
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
             builder.Entity<CartItem>()
-                .HasOne<FoodMarket.Models.Cart>(ci => ci.Cart)
+                .HasOne(ci => ci.Cart)
                 .WithMany(c => c.Items)
                 .HasForeignKey(ci => ci.CartId);
 
             builder.Entity<CartItem>()
-                .HasOne<FoodMarket.Models.Product>(ci => ci.Product)
+                .HasOne(ci => ci.Product)
                 .WithMany()
                 .HasForeignKey(ci => ci.ProductId);
 
-            builder.Entity<FoodMarket.Models.Product>()
-                .Property<decimal>(p => p.Price)
+            builder.Entity<Product>()
+                .Property(p => p.Price)
                 .HasColumnType("decimal(18,2)");
 
-            builder.Entity<FoodMarket.Models.Product>().HasData(
+            builder.Entity<Order>()
+                .Property(o => o.TotalPrice)
+                .HasColumnType("decimal(18,2)");
+
+            builder.Entity<OrderItem>()
+                .HasOne(oi => oi.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(oi => oi.OrderId);
+
+            builder.Entity<OrderItem>()
+                .HasOne(oi => oi.Product)
+                .WithMany()
+                .HasForeignKey(oi => oi.ProductId);
+
+            builder.Entity<Product>().HasData(
                 new Product { Id = 1, Name = "Яблоко", Description = "Свежее красное яблоко", Price = 1.99m, ImageUrl = "/images/apple.jpg", Category = "Фрукты" },
                 new Product { Id = 2, Name = "Морковь", Description = "Сочная морковь", Price = 0.89m, ImageUrl = "/images/carrot.jpg", Category = "Овощи" },
                 new Product { Id = 3, Name = "Хлеб", Description = "Свежий пшеничный хлеб", Price = 1.49m, ImageUrl = "/images/bread.jpg", Category = "Выпечка" },

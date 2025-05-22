@@ -19,6 +19,8 @@ namespace FoodMarket.Controllers
 
         private string? GetUserId()
         {
+            Console.WriteLine("GetUserId");
+            Console.WriteLine(User.FindFirstValue(ClaimTypes.NameIdentifier));
             return User.FindFirstValue(ClaimTypes.NameIdentifier);
         }
 
@@ -44,21 +46,21 @@ namespace FoodMarket.Controllers
         }
 
         [HttpPost("add/{productId}")]
-        // [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> AddToCart(int productId)
         {
-            foreach (var claim in User.Claims)
+            var usr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            // if (string.IsNullOrEmpty(userId))
+            //     return Unauthorized("User ID not found in token.");
+
+            if (usr == null)
             {
-                Console.WriteLine($"CLAIM TYPE: {claim.Type} | VALUE: {claim.Value}");
-            }
-
-            var userId = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User ID not found in token.");
-
-            var cart = await _cartRepository.AddToCart(userId, productId);
+            }
+            var cart = await _cartRepository.AddToCart(usr, productId);
             return Ok(cart);
         }
+
 
 
         [HttpDelete("remove/{productId}")]
