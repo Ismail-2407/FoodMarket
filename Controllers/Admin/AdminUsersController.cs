@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using FoodMarket.Services;
 using FoodMarket.Models;
+using FoodMarket.Data; 
+using Microsoft.AspNetCore.Identity; 
+using Microsoft.EntityFrameworkCore; 
+
 
 namespace FoodMarket.Controllers.Admin;
 
@@ -10,45 +13,54 @@ namespace FoodMarket.Controllers.Admin;
 //[Authorize(Roles = "Admin")]
 public class AdminUsersController : ControllerBase
 {
-    private readonly UserManager<User> _userManager;
+    private readonly IUserService _userService;
+    private readonly AppDbContext _context;
 
-    public AdminUsersController(UserManager<User> userManager)
+    public AdminUsersController(IUserService userService, AppDbContext context)
     {
-        _userManager = userManager;
+        _userService = userService;
+        _context = context;
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<object>> GetAllUsers()
+    public async Task<ActionResult<IEnumerable<object>>> GetAllUsers()
     {
-        var users = _userManager.Users.Select(u => new
+        var users = await _userService.GetAllAsync();
+        return Ok(users.Select(u => new
         {
             u.Id,
             u.FullName,
             u.Email
-        }).ToList();
-
-        return Ok(users);
+        }));
     }
 
     [HttpGet("{id}/roles")]
-    public async Task<ActionResult<IEnumerable<string>>> GetUserRoles(string id)
+    public async Task<ActionResult<string>> GetUserRoles(string id)
     {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user == null) return NotFound();
-
-        var roles = await _userManager.GetRolesAsync(user);
-        return Ok(roles);
+        var (role, found) = await _userService.GetRoleByIdAsync(id);
+        if (!found) return NotFound();
+        return Ok(role);
     }
 
     [HttpPost("{id}/add-role")]
     public async Task<IActionResult> AddRole(string id, [FromBody] string role)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userService.GetByIdAsync(id);
         if (user == null) return NotFound();
 
-        var result = await _userManager.AddToRoleAsync(user, role);
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
+        var roleEntity = await _context.Roles.FirstOrDefaultAsync(r => r.Name == role);
+        if (roleEntity == null) return BadRequest("Роль не найдена");
+
+        var alreadyAssigned = await _context.UserRoles
+            .AnyAsync(ur => ur.UserId == id && ur.RoleId == roleEntity.Id);
+        if (alreadyAssigned) return BadRequest("Роль уже назначена");
+
+        _context.UserRoles.Add(new IdentityUserRole<string>
+        {
+            UserId = id,
+            RoleId = roleEntity.Id
+        });
+        await _context.SaveChangesAsync();
 
         return Ok();
     }
@@ -56,12 +68,18 @@ public class AdminUsersController : ControllerBase
     [HttpPost("{id}/remove-role")]
     public async Task<IActionResult> RemoveRole(string id, [FromBody] string role)
     {
-        var user = await _userManager.FindByIdAsync(id);
+        var user = await _userService.GetByIdAsync(id);
         if (user == null) return NotFound();
 
-        var result = await _userManager.RemoveFromRoleAsync(user, role);
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
+        var roleEntity = await _context.Roles.FirstOrDefaultAsync(r => r.Name == role);
+        if (roleEntity == null) return BadRequest("Роль не найдена");
+
+        var userRole = await _context.UserRoles
+            .FirstOrDefaultAsync(ur => ur.UserId == id && ur.RoleId == roleEntity.Id);
+        if (userRole == null) return BadRequest("Роль у пользователя не найдена");
+
+        _context.UserRoles.Remove(userRole);
+        await _context.SaveChangesAsync();
 
         return Ok();
     }

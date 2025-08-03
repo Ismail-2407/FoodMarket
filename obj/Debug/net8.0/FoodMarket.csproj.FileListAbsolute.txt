@@ -135,11 +135,6 @@ C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\FoodMarket.MvcApplica
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\FoodMarket.sourcelink.json
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets.development.json
-C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets\msbuild.FoodMarket.Microsoft.AspNetCore.StaticWebAssets.props
-C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets\msbuild.build.FoodMarket.props
-C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.FoodMarket.props
-C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.FoodMarket.props
-C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets.pack.json
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\scopedcss\bundle\FoodMarket.styles.css
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\FoodMarket.csproj.Up2Date
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\FoodMarket.dll
@@ -147,3 +142,12 @@ C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\refint\FoodMarket.dll
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\FoodMarket.pdb
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\FoodMarket.genruntimeconfig.cache
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\ref\FoodMarket.dll
+C:\Users\LENOVO\RiderProjects\FoodMarkett\bin\Debug\net8.0\Npgsql.dll
+C:\Users\LENOVO\RiderProjects\FoodMarkett\bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+C:\Users\LENOVO\RiderProjects\FoodMarkett\bin\Debug\net8.0\FoodMarket.staticwebassets.endpoints.json
+C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\rpswa.dswa.cache.json
+C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\rjimswa.dswa.cache.json
+C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
+C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets.build.json.cache
+C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets.build.endpoints.json

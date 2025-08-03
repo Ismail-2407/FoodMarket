@@ -1,6 +1,10 @@
 ﻿using FoodMarket.Data;
 using FoodMarket.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FoodMarket.Repositories
 {
@@ -32,14 +36,23 @@ namespace FoodMarket.Repositories
 
         public async Task<Order> CreateOrder(string userId, List<int> productIds)
         {
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentException("UserId is null or empty");
+
+            if (productIds == null || productIds.Count == 0)
+                throw new ArgumentException("ProductIds cannot be empty");
+
             var products = await _context.Products
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync();
 
+            if (products.Count == 0)
+                throw new ArgumentException("No valid products found");
+
             var orderItems = products.Select(p => new OrderItem
             {
                 ProductId = p.Id,
-                Quantity = 1 
+                Quantity = 1
             }).ToList();
 
             var order = new Order
@@ -47,7 +60,8 @@ namespace FoodMarket.Repositories
                 UserId = userId,
                 OrderDate = DateTime.UtcNow,
                 OrderItems = orderItems,
-                TotalPrice = products.Sum(p => p.Price)
+                TotalPrice = products.Sum(p => p.Price),
+                Status = "Pending"
             };
 
             _context.Orders.Add(order);

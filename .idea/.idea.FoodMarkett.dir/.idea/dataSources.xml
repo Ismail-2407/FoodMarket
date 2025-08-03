@@ -9,5 +9,13 @@
       <jdbc-url>Server=tcp:marketdb.database.windows.net,1433;Initial Catalog=Marketdb;Persist Security Info=False;User ID=Ismail;Password=C632RRn6;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="foodmarket_db@localhost" uuid="6982a935-ce6b-4b4d-a05a-68bd61ebfebf">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <configured-by-url>true</configured-by-url>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/foodmarket_db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

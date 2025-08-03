@@ -9,7 +9,9 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<AppDbCont
     public AppDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseSqlServer("Server=tcp:marketdb.database.windows.net,1433;Initial Catalog=Marketdb;Persist Security Info=False;User ID=Ismail;Password=C632RRn6;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30");
+
+        // ПРИМЕЧАНИЕ: эта строка подключения должна быть PostgreSQL, НЕ SQL Server
+        optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=foodmarket_db;Username=postgres;Password=secret");
 
         return new AppDbContext(optionsBuilder.Options);
     }

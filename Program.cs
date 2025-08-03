@@ -4,15 +4,21 @@ using FoodMarket.Models;
 using FoodMarket.Repositories;
 using FoodMarket.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddLogging();
+builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    });
+
+// ✅ Настройка CORS для веб-клиента
 builder.Services.AddCors(policy =>
 {
     policy.AddPolicy("Default", builder =>
@@ -21,15 +27,13 @@ builder.Services.AddCors(policy =>
             .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials()
-            .WithExposedHeaders("Set-Cookie", "Content-Disposition")
-            .SetIsOriginAllowedToAllowWildcardSubdomains();
+            .AllowCredentials();
     });
 });
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
+    options.UseNpgsql(connectionString), ServiceLifetime.Scoped);
 
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
@@ -39,16 +43,12 @@ var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new Exception("JWT key mi
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 
-Console.WriteLine(jwtKey);
-Console.WriteLine(jwtIssuer);
-Console.WriteLine(jwtAudience);
-
-builder.Services.AddAuthentication(options => {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.SaveToken = true;
+        options.RequireHttpsMetadata = false;
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -60,49 +60,31 @@ builder.Services.AddAuthentication(options => {
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
 
-        options.Events = new JwtBearerEvents()
+        // ✅ Используем куки для извлечения токена
+        options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
-                var accessToken = context.HttpContext.Request.Cookies["accessToken"];
-                if (!string.IsNullOrEmpty(accessToken))
+                var token = context.HttpContext.Request.Cookies["AccessToken"];
+                if (!string.IsNullOrEmpty(token))
                 {
-                    context.Token = accessToken;
+                    context.Token = token;
                 }
-
                 return Task.CompletedTask;
-            },
-            // OnForbidden = async context =>
-            // {
-            //     var authService = context.HttpContext.RequestServices.GetRequiredService<IAuthService>();
-            //     var tokenService = context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
-            //     
-            //     
-            //     var accessToken = context.Request.Cookies["accessToken"];
-            //     var refreshToken = context.Request.Cookies["refreshToken"];
-            //     
-            //     var username = await tokenService.GetNameFromToken(accessToken);
-            //
-            //     var result = await authService.RefreshTokenAsync(new RefreshTokenRequest(username, refreshToken));
-            //
-            //     context.Response.Cookies.Append("accessToken", result.accessToken);
-            //     context.Response.Cookies.Append("refreshToken", result.refreshToken);
-            //
-            //     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            // }
+            }
         };
     });
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.MinimumSameSitePolicy = SameSiteMode.None;
-    options.Secure = CookieSecurePolicy.Always;
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;
+    options.Secure = CookieSecurePolicy.SameAsRequest;
 });
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     options.Cookie.HttpOnly = true;
 
     options.Events.OnRedirectToLogin = context =>
@@ -117,24 +99,21 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-builder.Services.AddAuthorization();
-// {
-    // options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
-    // options.AddPolicy("UserPolicy", policy => policy.RequireRole("User", "Admin"));
-// });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("UserPolicy", policy =>
+        policy.RequireAuthenticatedUser());
+});
 
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 
-
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -142,29 +121,8 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-
-    await EnsureAdminRoleAndUser(userManager, roleManager);
-}
-
-async Task EnsureAdminRoleAndUser(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
-{
-    if (!await roleManager.RoleExistsAsync("Admin"))
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
-
-    var email = "ismailqasimov71@gmail.com";
-    var user = await userManager.FindByEmailAsync(email);
-
-    if (user != null && !await userManager.IsInRoleAsync(user, "Admin"))
-    {
-        await userManager.AddToRoleAsync(user, "Admin");
-        Console.WriteLine($"Пользователю {email} добавлена роль Admin");
-    }
-    else if (user == null)
-    {
-        Console.WriteLine($"Пользователь с email {email} не найден.");
-    }
+    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+    await userService.EnsureAdminUserAsync();
 }
 
 if (app.Environment.IsDevelopment())

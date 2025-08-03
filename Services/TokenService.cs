@@ -20,14 +20,14 @@ namespace FoodMarket.Services
         {
             var claims = new List<Claim>
             {
-                new Claim("sub", user.Id),
-                new Claim("email", user.Email),
-                new Claim("name", user.UserName ?? user.Email)
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.UserName ?? user.Email)
             };
 
             foreach (var role in roles)
             {
-                claims.Add(new Claim("role", role));
+                claims.Add(new Claim(ClaimTypes.Role, role)); 
             }
 
             var identity = new ClaimsIdentity(claims, "jwt", ClaimTypes.Name, ClaimTypes.Role);
@@ -38,7 +38,7 @@ namespace FoodMarket.Services
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
-                claims: identity.Claims, // ✅ используем identity.Claims
+                claims: identity.Claims,
                 expires: DateTime.UtcNow.AddDays(7),
                 signingCredentials: creds
             );
@@ -49,7 +49,6 @@ namespace FoodMarket.Services
 
             return jwt;
         }
-
 
         public string? GetUserIdFromToken(string token)
         {

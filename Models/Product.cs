@@ -11,6 +11,6 @@ namespace FoodMarket.Models
         public string ImageUrl { get; set; } = null!;
         public string Category { get; set; } = null!;
         
-        public ICollection<Cart> Carts { get; set; } = new List<Cart>();
+        //public ICollection<Cart> Carts { get; set; } = new List<Cart>();
     }
 }
