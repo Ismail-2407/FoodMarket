@@ -29,7 +29,7 @@ public class AuthController : ControllerBase
         Response.Cookies.Append("AccessToken", token, new CookieOptions
         {
             HttpOnly = true,
-            Secure =  false,
+            Secure = false,
             SameSite = SameSiteMode.Lax,
             Expires = DateTimeOffset.UtcNow.AddDays(7)
         });
@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             message = "Успешный вход",
-            role = "Admin",
+            role = role, // передаём реальную роль
             token = token  
         });
     }
@@ -56,8 +56,8 @@ public class AuthController : ControllerBase
     //[Authorize] // ✅ Убрана политика
     public async Task<IActionResult> Check()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
             return Unauthorized("Пользователь не авторизован");
 
         var (role, found) = await _userService.GetRoleByIdAsync(userId);

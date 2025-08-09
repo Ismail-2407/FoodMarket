@@ -1,10 +1,11 @@
 ﻿using FoodMarket.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodMarket.Data
 {
-    public class AppDbContext : IdentityDbContext<User>
+    public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -35,6 +36,7 @@ namespace FoodMarket.Data
                 .WithMany()
                 .HasForeignKey(oi => oi.ProductId);
 
+            // Seed data for products
             builder.Entity<Product>().HasData(
                 new Product { Id = 1, Name = "Яблоко", Description = "Свежее красное яблоко", Price = 1.99m, ImageUrl = "/images/apple.jpg", Category = "Фрукты" },
                 new Product { Id = 2, Name = "Морковь", Description = "Сочная морковь", Price = 0.89m, ImageUrl = "/images/carrot.jpg", Category = "Овощи" },

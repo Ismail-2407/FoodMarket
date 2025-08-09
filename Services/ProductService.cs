@@ -1,11 +1,12 @@
 ﻿using FoodMarket.Data;
 using FoodMarket.DTOs;
 using FoodMarket.Models;
+using FoodMarket.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodMarket.Services
 {
-    public class ProductService
+    public class ProductService : IProductService
     {
         private readonly AppDbContext _context;
 

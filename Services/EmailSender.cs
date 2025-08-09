@@ -3,14 +3,10 @@ using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using FoodMarket.Services.Interfaces;
 
 namespace FoodMarket.Services
 {
-    public interface IEmailSender
-    {
-        Task SendEmailAsync(string email, string subject, string message);
-    }
-
     public class EmailSender : IEmailSender
     {
         private readonly IConfiguration _config;

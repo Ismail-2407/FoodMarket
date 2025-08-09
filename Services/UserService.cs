@@ -73,7 +73,7 @@ public class UserService : IUserService
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
         if (role != null)
         {
-            _context.UserRoles.Add(new IdentityUserRole<string>
+            _context.UserRoles.Add(new IdentityUserRole<int>
             {
                 UserId = user.Id,
                 RoleId = role.Id
@@ -84,7 +84,7 @@ public class UserService : IUserService
         return true;
     }
 
-    public async Task<(string Role, bool Found)> GetRoleByIdAsync(string userId)
+    public async Task<(string Role, bool Found)> GetRoleByIdAsync(int userId)
     {
         var role = await _context.UserRoles
             .Where(ur => ur.UserId == userId)
@@ -94,7 +94,7 @@ public class UserService : IUserService
         return role != null ? (role, true) : ("", false);
     }
 
-    public async Task<User?> GetByIdAsync(string id)
+    public async Task<User?> GetByIdAsync(int id)
     {
         return await _context.Users.FindAsync(id);
     }
@@ -104,7 +104,7 @@ public class UserService : IUserService
         return await _context.Users.ToListAsync();
     }
 
-    public async Task<bool> DeleteAsync(string id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var user = await _context.Users.FindAsync(id);
         if (user == null) return false;
@@ -114,7 +114,7 @@ public class UserService : IUserService
         return true;
     }
 
-    public async Task<bool> UpdatePasswordAsync(string id, string newPassword)
+    public async Task<bool> UpdatePasswordAsync(int id, string newPassword)
     {
         var user = await _context.Users.FindAsync(id);
         if (user == null) return false;
@@ -159,7 +159,7 @@ public class UserService : IUserService
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
         if (role == null)
         {
-            role = new IdentityRole
+            role = new IdentityRole<int>
             {
                 Name = "Admin",
                 NormalizedName = "ADMIN"
@@ -171,7 +171,7 @@ public class UserService : IUserService
         var hasRole = await _context.UserRoles.AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id);
         if (!hasRole)
         {
-            _context.UserRoles.Add(new IdentityUserRole<string>
+            _context.UserRoles.Add(new IdentityUserRole<int>
             {
                 UserId = user.Id,
                 RoleId = role.Id

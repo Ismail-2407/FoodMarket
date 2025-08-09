@@ -1,13 +1,17 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using FoodMarket.Models;
+using FoodMarket.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FoodMarket.Services
 {
-    public class TokenService
+    public class TokenService : ITokenService
     {
         private readonly IConfiguration _config;
 
@@ -20,17 +24,15 @@ namespace FoodMarket.Services
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.UserName ?? user.Email)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.UserName ?? user.Email ?? string.Empty)
             };
 
             foreach (var role in roles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, role)); 
+                claims.Add(new Claim(ClaimTypes.Role, role));
             }
-
-            var identity = new ClaimsIdentity(claims, "jwt", ClaimTypes.Name, ClaimTypes.Role);
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -38,25 +40,19 @@ namespace FoodMarket.Services
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
-                claims: identity.Claims,
+                claims: claims,
                 expires: DateTime.UtcNow.AddDays(7),
                 signingCredentials: creds
             );
 
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-            Console.WriteLine($"📏 Token length: {jwt.Length}");
-            Console.WriteLine($"🆔 Token: {jwt}");
-
-            return jwt;
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         public string? GetUserIdFromToken(string token)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwt = handler.ReadJwtToken(token);
-
-            var userIdClaim = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            return userIdClaim?.Value;
+            return jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         }
     }
 }

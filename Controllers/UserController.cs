@@ -20,8 +20,8 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetCurrentUser()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
             return Unauthorized();
 
         var user = await _userService.GetByIdAsync(userId);

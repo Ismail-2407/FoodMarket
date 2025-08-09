@@ -3,6 +3,7 @@ using FoodMarket.Data;
 using FoodMarket.Models;
 using FoodMarket.Repositories;
 using FoodMarket.Services;
+using FoodMarket.Services.Interfaces; // Интерфейсы сервисов
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,9 +22,9 @@ builder.Services.AddControllers()
 // ✅ Настройка CORS для веб-клиента
 builder.Services.AddCors(policy =>
 {
-    policy.AddPolicy("Default", builder =>
+    policy.AddPolicy("Default", corsBuilder =>
     {
-        builder
+        corsBuilder
             .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -35,7 +36,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString), ServiceLifetime.Scoped);
 
-builder.Services.AddIdentity<User, IdentityRole>()
+// ✅ Identity с int-ключом
+builder.Services.AddIdentity<User, IdentityRole<int>>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
@@ -60,7 +62,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
 
-        // ✅ Используем куки для извлечения токена
+        // ✅ Достаём токен из куки
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -105,20 +107,24 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser());
 });
 
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<ProductService>();
+// ✅ Регистрируем сервисы через интерфейсы
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
+// ✅ Регистрируем репозитории
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// ✅ Создаём админа при старте
 using (var scope = app.Services.CreateScope())
 {
     var userService = scope.ServiceProvider.GetRequiredService<IUserService>();

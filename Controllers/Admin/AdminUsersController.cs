@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using FoodMarket.Services;
 using FoodMarket.Models;
-using FoodMarket.Data; 
-using Microsoft.AspNetCore.Identity; 
-using Microsoft.EntityFrameworkCore; 
-
+using FoodMarket.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodMarket.Controllers.Admin;
 
@@ -35,7 +34,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpGet("{id}/roles")]
-    public async Task<ActionResult<string>> GetUserRoles(string id)
+    public async Task<ActionResult<string>> GetUserRoles(int id)
     {
         var (role, found) = await _userService.GetRoleByIdAsync(id);
         if (!found) return NotFound();
@@ -43,7 +42,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPost("{id}/add-role")]
-    public async Task<IActionResult> AddRole(string id, [FromBody] string role)
+    public async Task<IActionResult> AddRole(int id, [FromBody] string role)
     {
         var user = await _userService.GetByIdAsync(id);
         if (user == null) return NotFound();
@@ -55,7 +54,7 @@ public class AdminUsersController : ControllerBase
             .AnyAsync(ur => ur.UserId == id && ur.RoleId == roleEntity.Id);
         if (alreadyAssigned) return BadRequest("Роль уже назначена");
 
-        _context.UserRoles.Add(new IdentityUserRole<string>
+        _context.UserRoles.Add(new IdentityUserRole<int>
         {
             UserId = id,
             RoleId = roleEntity.Id
@@ -66,7 +65,7 @@ public class AdminUsersController : ControllerBase
     }
 
     [HttpPost("{id}/remove-role")]
-    public async Task<IActionResult> RemoveRole(string id, [FromBody] string role)
+    public async Task<IActionResult> RemoveRole(int id, [FromBody] string role)
     {
         var user = await _userService.GetByIdAsync(id);
         if (user == null) return NotFound();
