@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using FoodMarket.Data;
 using FoodMarket.Models;
+using FoodMarket.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,9 +10,9 @@ namespace FoodMarket.Services;
 public class UserService : IUserService
 {
     private readonly AppDbContext _context;
-    private readonly TokenService _tokenService;
+    private readonly ITokenService _tokenService;
 
-    public UserService(AppDbContext context, TokenService tokenService)
+    public UserService(AppDbContext context, ITokenService tokenService)
     {
         _context = context;
         _tokenService = tokenService;

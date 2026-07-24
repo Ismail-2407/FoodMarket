@@ -1,6 +1,6 @@
 ﻿using FoodMarket.Data;
+using FoodMarket.DTOs;
 using FoodMarket.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +8,6 @@ namespace FoodMarket.Controllers.Admin;
 
 [Route("api/admin/products")]
 [ApiController]
-//[Authorize(Roles = "Admin")]
 public class AdminProductsController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -33,10 +32,38 @@ public class AdminProductsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Product>> Create(Product product)
+    public async Task<ActionResult<Product>> Create([FromForm] CreateProductDto dto)
     {
+        string? imageUrl = null;
+
+        if (dto.Image != null)
+        {
+            var uploadsFolder = Path.Combine("wwwroot", "images");
+            Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = Guid.NewGuid() + Path.GetExtension(dto.Image.FileName);
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await dto.Image.CopyToAsync(stream);
+            }
+
+            imageUrl = $"/images/{fileName}";
+        }
+
+        var product = new Product
+        {
+            Name = dto.Name,
+            Description = dto.Description,
+            Price = dto.Price,
+            Category = dto.Category,
+            ImageUrl = imageUrl ?? ""
+        };
+
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
+
         return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
     }
 
@@ -77,7 +104,4 @@ public class AdminProductsController : ControllerBase
             return StatusCode(500, new { message = "Произошла внутренняя ошибка при удалении.", details = ex.Message });
         }
     }
-
-
-
 }

@@ -151,3 +151,4 @@ C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\rjsmrazor.dswa.cache.
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\LENOVO\RiderProjects\FoodMarkett\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\LENOVO\RiderProjects\FoodMarkett\bin\Debug\net8.0\FoodMarket.staticwebassets.runtime.json

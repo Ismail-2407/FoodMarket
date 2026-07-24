@@ -1,13 +1,18 @@
 using System.Text;
+using System.Globalization;
 using FoodMarket.Data;
 using FoodMarket.Models;
 using FoodMarket.Repositories;
 using FoodMarket.Services;
-using FoodMarket.Services.Interfaces; // Интерфейсы сервисов
+using FoodMarket.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+
+var cultureInfo = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +24,6 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
     });
 
-// ✅ Настройка CORS для веб-клиента
 builder.Services.AddCors(policy =>
 {
     policy.AddPolicy("Default", corsBuilder =>
@@ -36,8 +40,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString), ServiceLifetime.Scoped);
 
-// ✅ Identity с int-ключом
-builder.Services.AddIdentity<User, IdentityRole<int>>()
+builder.Services.AddIdentityCore<User>()
+    .AddRoles<IdentityRole<int>>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
@@ -45,59 +49,42 @@ var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new Exception("JWT key mi
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.SaveToken = true;
-        options.RequireHttpsMetadata = false;
-
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-        };
-
-        // ✅ Достаём токен из куки
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var token = context.HttpContext.Request.Cookies["AccessToken"];
-                if (!string.IsNullOrEmpty(token))
-                {
-                    context.Token = token;
-                }
-                return Task.CompletedTask;
-            }
-        };
-    });
-
-builder.Services.Configure<CookiePolicyOptions>(options =>
+builder.Services.AddAuthentication(options =>
 {
-    options.MinimumSameSitePolicy = SameSiteMode.Lax;
-    options.Secure = CookieSecurePolicy.SameAsRequest;
-});
-
-builder.Services.ConfigureApplicationCookie(options =>
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
 {
-    options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-    options.Cookie.HttpOnly = true;
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
 
-    options.Events.OnRedirectToLogin = context =>
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        context.Response.StatusCode = 401;
-        return Task.CompletedTask;
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        // ✅ Убираем кастомный OnMessageReceived — пусть JWT middleware сам читает из заголовка
     };
-    options.Events.OnRedirectToAccessDenied = context =>
+
+    options.Events = new JwtBearerEvents
     {
-        context.Response.StatusCode = 403;
-        return Task.CompletedTask;
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"JWT Auth failed: {context.Exception.Message}");
+            Console.WriteLine($"Auth header: {context.Request.Headers["Authorization"]}");
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("JWT Token validated successfully!");
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -107,24 +94,23 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAuthenticatedUser());
 });
 
-// ✅ Регистрируем сервисы через интерфейсы
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 
-// ✅ Регистрируем репозитории
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// ✅ Создаём админа при старте
 using (var scope = app.Services.CreateScope())
 {
     var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -137,8 +123,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStaticFiles();
 app.UseCors("Default");
-app.UseCookiePolicy();
 app.UseAuthentication();
 app.UseAuthorization();
 
