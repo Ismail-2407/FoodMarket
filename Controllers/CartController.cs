@@ -7,7 +7,7 @@ namespace FoodMarket.Controllers
 {
     [ApiController]
     [Route("api/cart")]
-    // ✅ Убираем [Authorize] — читаем токен вручную
+    // [Authorize]
     public class CartController : ControllerBase
     {
         private readonly ICartRepository _cartRepository;

@@ -8,5 +8,6 @@ namespace FoodMarket.Models
         public string CustomUsername { get; set; } = string.Empty;
         public string Role { get; set; } = "User";
         public string? ResetPasswordToken { get; set; }
+        public string? PhotoUrl { get; set; }  
     }
 }

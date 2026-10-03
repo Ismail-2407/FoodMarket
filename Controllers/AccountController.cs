@@ -1,74 +1,70 @@
-﻿// using Microsoft.AspNetCore.Identity;
+﻿// using FoodMarket.Models;
+// using FoodMarket.Services.Interfaces;
+// using Microsoft.AspNetCore.Identity;
 // using Microsoft.AspNetCore.Mvc;
-// using FoodMarket.Models;
-// using Microsoft.Extensions.Configuration;
-// using Microsoft.IdentityModel.Tokens;
-// using System.IdentityModel.Tokens.Jwt;
-// using System.Security.Claims;
-// using System.Text;
-// using System.Threading.Tasks;
-// using System.Collections.Generic;
 //
 // namespace FoodMarket.Controllers
 // {
-//     [Route("api/[controller]")]
+//     [Route("api/account")]
 //     [ApiController]
 //     public class AccountController : ControllerBase
 //     {
 //         private readonly UserManager<User> _userManager;
-//         private readonly IConfiguration _configuration;
+//         private readonly IEmailSender _emailSender;
 //
-//         public AccountController(UserManager<User> userManager, IConfiguration configuration)
+//         public AccountController(UserManager<User> userManager, IEmailSender emailSender)
 //         {
 //             _userManager = userManager;
-//             _configuration = configuration;
+//             _emailSender = emailSender;
 //         }
 //
-//         [HttpPost("login")]
-//         public async Task<IActionResult> Login([FromBody] LoginModel model)
+//         [HttpPost("forgot-password")]
+//         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
 //         {
-//             var user = await _userManager.FindByEmailAsync(model.Email);
-//             // if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-//             //     return Unauthorized("Неверный email или пароль");
-//             
-//             await _userManager.AddToRoleAsync(user, "User");
-//             var roles = await _userManager.GetRolesAsync(user);
-//             var role = roles.FirstOrDefault() ?? "User";
-//             
+//             var user = await _userManager.FindByEmailAsync(dto.Email);
+//             if (user == null)
+//                 return Ok(new { message = "Если email существует, письмо отправлено" });
 //
-//             var claims = new List<Claim>
+//             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+//             var encodedToken = Uri.EscapeDataString(token);
+//             var resetLink = $"http://localhost:5173/reset-password?email={dto.Email}&token={encodedToken}";
+//
+//             await _emailSender.SendEmailAsync(dto.Email, "Сброс пароля",
+//                 $"<p>Для сброса пароля перейдите по ссылке:</p><a href='{resetLink}'>{resetLink}</a>");
+//
+//             return Ok(new { message = "Письмо отправлено" });
+//         }
+//
+//         [HttpPost("reset-password")]
+//         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+//         {
+//             var user = await _userManager.FindByEmailAsync(dto.Email);
+//             if (user == null)
+//                 return BadRequest("Пользователь не найден");
+//
+//             var decodedToken = Uri.UnescapeDataString(dto.Token);
+//             var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+//
+//             if (!result.Succeeded)
 //             {
-//                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-//                 new Claim(ClaimTypes.Email, user.Email),
-//                 new Claim(ClaimTypes.Name, user.UserName ?? user.Email),
-//                 new Claim(ClaimTypes.Role, role)
-//             };
+//                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+//                 Console.WriteLine($"Reset password errors: {errors}");
+//                 return BadRequest(errors);
+//             }
 //
-//             //foreach (var role in roles)
-//             //{
-//                // claims.Add(new Claim(ClaimTypes.Role, role));
-//             //}
-//
-//             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-//             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-//
-//             var token = new JwtSecurityToken(
-//                 issuer: _configuration["Jwt:Issuer"],
-//                 audience: _configuration["Jwt:Audience"],
-//                 claims: claims,
-//                 expires: DateTime.Now.AddMinutes(60),
-//                 signingCredentials: creds
-//             );
-//
-//             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-//
-//             return Ok(new { token = tokenString });
+//             return Ok(new { message = "Пароль успешно изменён" });
 //         }
 //     }
 //
-//     public class LoginModel
+//     public class ForgotPasswordDto
 //     {
-//         public string Email { get; set; }
-//         public string Password { get; set; }
+//         public string Email { get; set; } = "";
+//     }
+//
+//     public class ResetPasswordDto
+//     {
+//         public string Email { get; set; } = "";
+//         public string Token { get; set; } = "";
+//         public string NewPassword { get; set; } = "";
 //     }
 // }

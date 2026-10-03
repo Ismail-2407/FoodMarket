@@ -15,6 +15,8 @@ namespace FoodMarket.Data
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Address> Addresses { get; set; }      
+        public DbSet<Favorite> Favorites { get; set; }     
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -37,6 +39,21 @@ namespace FoodMarket.Data
                 .HasOne(oi => oi.Product)
                 .WithMany()
                 .HasForeignKey(oi => oi.ProductId);
+            
+            builder.Entity<Address>()
+                .HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId);
+
+            builder.Entity<Favorite>()
+                .HasOne(f => f.User)
+                .WithMany()
+                .HasForeignKey(f => f.UserId);
+
+            builder.Entity<Favorite>()
+                .HasOne(f => f.Product)
+                .WithMany()
+                .HasForeignKey(f => f.ProductId);
 
             // Seed data for products
             builder.Entity<Product>().HasData(

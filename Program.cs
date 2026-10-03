@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Linq;
 
 var cultureInfo = new CultureInfo("en-US");
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
@@ -40,7 +41,15 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString), ServiceLifetime.Scoped);
 
-builder.Services.AddIdentityCore<User>()
+// ✅ AddIdentityCore + UserManager для reset password
+builder.Services.AddIdentityCore<User>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
+})
     .AddRoles<IdentityRole<int>>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
@@ -69,15 +78,26 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtIssuer,
         ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-        // ✅ Убираем кастомный OnMessageReceived — пусть JWT middleware сам читает из заголовка
     };
 
     options.Events = new JwtBearerEvents
     {
+        OnMessageReceived = context =>
+        {
+            var authHeader = context.Request.Headers["Authorization"].ToString();
+
+            if (!string.IsNullOrEmpty(authHeader) &&
+                authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Token = authHeader.Substring("Bearer ".Length).Trim();
+            }
+
+            Console.WriteLine($"[DEBUG] {context.Request.Method} {context.Request.Path} — Token length: {context.Token?.Length ?? 0}, dots: {context.Token?.Count(c => c == '.') ?? 0}");
+            return Task.CompletedTask;
+        },
         OnAuthenticationFailed = context =>
         {
             Console.WriteLine($"JWT Auth failed: {context.Exception.Message}");
-            Console.WriteLine($"Auth header: {context.Request.Headers["Authorization"]}");
             return Task.CompletedTask;
         },
         OnTokenValidated = context =>
@@ -103,7 +123,6 @@ builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 builder.Services.AddEndpointsApiExplorer();

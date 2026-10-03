@@ -53,10 +53,12 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("check")]
-    //[Authorize] // ✅ Убрана политика
     public async Task<IActionResult> Check()
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                        ?? User.FindFirstValue("nameid")
+                        ?? User.FindFirstValue("sub");
+
         if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
             return Unauthorized("Пользователь не авторизован");
 
