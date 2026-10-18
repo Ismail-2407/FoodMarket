@@ -1,0 +1,33 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\LENOVO\\RiderProjects\\FoodMarkett\\wwwroot\\images\\20a92b00-95be-467c-89da-eb53c1bfab9c.jpg",
+      "PackagePath": "staticwebassets\\images\\20a92b00-95be-467c-89da-eb53c1bfab9c.jpg"
+    },
+    {
+      "Id": "C:\\Users\\LENOVO\\RiderProjects\\FoodMarkett\\wwwroot\\images\\d370336c-973c-4e2a-9cc1-76f27123df26.jpg",
+      "PackagePath": "staticwebassets\\images\\d370336c-973c-4e2a-9cc1-76f27123df26.jpg"
+    },
+    {
+      "Id": "C:\\Users\\LENOVO\\RiderProjects\\FoodMarkett\\wwwroot\\images\\profiles\\2cba769b-d0fc-4251-a862-11089c21e3cd.png",
+      "PackagePath": "staticwebassets\\images\\profiles\\2cba769b-d0fc-4251-a862-11089c21e3cd.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.FoodMarket.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.FoodMarket.props",
+      "PackagePath": "build\\FoodMarket.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.FoodMarket.props",
+      "PackagePath": "buildMultiTargeting\\FoodMarket.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.FoodMarket.props",
+      "PackagePath": "buildTransitive\\FoodMarket.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

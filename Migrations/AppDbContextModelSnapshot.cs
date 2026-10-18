@@ -203,12 +203,24 @@ namespace FoodMarket.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("DescriptionAz")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DescriptionEn")
+                        .HasColumnType("text");
+
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NameAz")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NameEn")
                         .HasColumnType("text");
 
                     b.Property<decimal>("Price")

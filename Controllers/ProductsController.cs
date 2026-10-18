@@ -66,6 +66,10 @@ public class ProductsController : ControllerBase
         product.Price = updated.Price;
         product.ImageUrl = updated.ImageUrl;
         product.Category = updated.Category;
+        product.NameEn = updated.NameEn;
+        product.NameAz = updated.NameAz;
+        product.DescriptionEn = updated.DescriptionEn;
+        product.DescriptionAz = updated.DescriptionAz;
 
         await _context.SaveChangesAsync();
         return Ok(product);

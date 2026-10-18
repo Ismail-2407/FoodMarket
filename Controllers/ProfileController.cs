@@ -68,4 +68,33 @@ public class ProfileController : ControllerBase
         await _db.SaveChangesAsync();
         return Ok(new { message = "Профиль обновлён" });
     }
+    
+    [HttpPost("photo")]
+    public async Task<IActionResult> UploadPhoto(IFormFile photo)
+    {
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized("Пользователь не авторизован");
+
+        if (photo == null || photo.Length == 0)
+            return BadRequest("Файл не передан");
+
+        var user = await _db.Users.FindAsync(userId.Value);
+        if (user == null) return NotFound();
+
+        var uploadsFolder = Path.Combine("wwwroot", "images", "profiles");
+        Directory.CreateDirectory(uploadsFolder);
+
+        var fileName = Guid.NewGuid() + Path.GetExtension(photo.FileName);
+        var filePath = Path.Combine(uploadsFolder, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await photo.CopyToAsync(stream);
+        }
+
+        user.PhotoUrl = $"/images/profiles/{fileName}";
+        await _db.SaveChangesAsync();
+
+        return Ok(new { photoUrl = user.PhotoUrl });
+    }
 }

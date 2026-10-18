@@ -10,7 +10,12 @@ namespace FoodMarket.Models
         public decimal Price { get; set; }
         public string ImageUrl { get; set; } = null!;
         public string Category { get; set; } = null!;
-        
+
+        public string? NameEn { get; set; }
+        public string? NameAz { get; set; }
+        public string? DescriptionEn { get; set; }
+        public string? DescriptionAz { get; set; }
+
         //public ICollection<Cart> Carts { get; set; } = new List<Cart>();
     }
 }

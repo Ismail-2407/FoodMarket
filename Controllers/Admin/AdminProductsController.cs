@@ -58,6 +58,10 @@ public class AdminProductsController : ControllerBase
             Description = dto.Description,
             Price = dto.Price,
             Category = dto.Category,
+            NameEn = dto.NameEn,
+            NameAz = dto.NameAz,
+            DescriptionEn = dto.DescriptionEn,
+            DescriptionAz = dto.DescriptionAz,
             ImageUrl = imageUrl ?? ""
         };
 
